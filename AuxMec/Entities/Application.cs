@@ -8,7 +8,7 @@ namespace OnlineMechanic.Entities
         public int Id { get; set; }
         public DateTime ApplicationDateTime { get; set; }
         public string ArrivalTimeStimated { get; set; }
-        public float BaseCost { get; set; }
+        public Double BaseCost { get; set; }
         public int WorkShopMechanicalMechanicId {  get; set; }
         public int AssistanceId { get; set; }
         public int ClientId { get; set; }

@@ -34,7 +34,7 @@ namespace OnlineMechanic.Controllers
                 {
                     ApplicationDateTime = DateTime.Now,
                     ArrivalTimeStimated = application.ArrivalTimeStimated,
-                    BaseCost = application.BaseCost,
+                    BaseCost = (Double)application.BaseCost,
                     WorkShopMechanicalMechanicId = mechanicalWorkShopId.Id,
                     AssistanceId = application.AssistanceId,
                     ClientId = assistance.ClientId,
@@ -59,10 +59,11 @@ namespace OnlineMechanic.Controllers
             try
             {
 
-                List<Application> applications = await _dbContext.Applications.ToListAsync();
+                var applications = await _dbContext.Applications
+                                                .Where(a => a.ClientId == ClientId)
+                                                .ToListAsync();
 
                 return Ok(applications);
-
             }
             catch (Exception ex)
             {
@@ -71,26 +72,43 @@ namespace OnlineMechanic.Controllers
             }
         }
 
-        [HttpPut("UpdateApplication")]
-        public async Task<ActionResult> UpdateApplication(ApplicationModel application)
+        [HttpGet("GetApplicationsByStatus/{StatusId}")]
+        public async Task<ActionResult> GetApplicationsByStatus(int StatusId)
+        {
+            try
+            {
+
+                var applications = await _dbContext.Applications
+                                                .Where(a => a.StatusId == StatusId)
+                                                .ToListAsync();
+
+                return Ok(applications);
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+        [HttpPost("UpdateApplication/{applicationId}")]
+        public async Task<ActionResult> UpdateApplication(int applicationId)
         {
             try
             {
                 var applicationToUpdate = await _dbContext.Applications
-                                          .Where(a => a.AssistanceId == application.AssistanceId)
+                                          .Where(a => a.Id == applicationId)
                                           .FirstOrDefaultAsync();
+
                 var assistanceToUpdate = await _dbContext.Assistances
-                                         .Where(a => a.Id == application.AssistanceId)
+                                         .Where(a => a.Id == applicationToUpdate.AssistanceId)
                                          .FirstOrDefaultAsync();
 
                 assistanceToUpdate.StatusId = (int)GlobalParametes.Status.InProgress;
                 applicationToUpdate.StatusId = (int)GlobalParametes.Status.Accepted;
 
-                await _dbContext.AddAsync(assistanceToUpdate);
-                await _dbContext.AddAsync(applicationToUpdate);
                 await _dbContext.SaveChangesAsync();
 
-                return Ok("Assistance and Application Status Updated");
+                return Ok(applicationToUpdate);
             }
             catch (Exception)
             {
